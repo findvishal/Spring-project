@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Customer Management</title>
+</head>
+<body>
+<h1>Customer Management</h1>
+
+<div>
+  <button id="getCustomersButton">Get Customer List</button>
+  <ul id="customerList"></ul>
+</div>
+
+<div>
+  <h2>Add Customer</h2>
+  <form id="addCustomerForm">
+    <label for="firstName">First Name:</label>
+    <input type="text" id="firstName" name="firstName" required><br><br>
+    <label for="lastName">Last Name:</label>
+    <input type="text" id="lastName" name="lastName" required><br><br>
+    <button type="submit">Add Customer</button>
+  </form>
+</div>
+
+<div>
+  <h2>Update Customer</h2>
+  <form id="updateCustomerForm">
+    <label for="uuid">UUID:</label>
+    <input type="text" id="uuid" name="uuid" required><br><br>
+    <label for="newFirstName">New First Name:</label>
+    <input type="text" id="newFirstName" name="newFirstName" required><br><br>
+    <label for="newLastName">New Last Name:</label>
+    <input type="text" id="newLastName" name="newLastName" required><br><br>
+    <button type="submit">Update Customer</button>
+  </form>
+</div>
+
+<div>
+  <h2>Delete Customer</h2>
+  <form id="deleteCustomerForm">
+    <label for="deleteUuid">UUID:</label>
+    <input type="text" id="deleteUuid" name="deleteUuid" required><br><br>
+    <button type="submit">Delete Customer</button>
+  </form>
+</div>
+<script>
+          // Function to extract JWT token from localStorage
+          function getToken() {
+              return localStorage.getItem("jwtToken");
+          }
+
+          // Function to fetch customer list
+          function getCustomers() {
+              const token = getToken();
+              fetch("http://localhost:9090/sunbase/portal/api/assignment", {
+                  headers: {
+                      Authorization: "Bearer " + token
+                  }
+              })
+              .then(response => response.json())
+              .then(data => {
+                  const customerList = document.getElementById("customerList");
+                  customerList.innerHTML = "";
+                  data.forEach(customer => {
+                      const li = document.createElement("li");
+                      li.textContent = `UUID: ${customer.uuid}, First Name: ${customer.first_name}, Last Name: ${customer.last_name}`;
+                      customerList.appendChild(li);
+                  });
+              })
+              .catch(error => {
+                  console.error(error);
+              });
+          }
+
+          // Function to handle form submissions
+          document.addEventListener("DOMContentLoaded", () => {
+              const addCustomerForm = document.getElementById("addCustomerForm");
+              const updateCustomerForm = document.getElementById("updateCustomerForm");
+              const deleteCustomerForm = document.getElementById("deleteCustomerForm");
+
+    addCustomerForm.addEventListener("submit", event => {
+    event.preventDefault();
+
+    const token = getToken();
+    const firstName = document.getElementById("addFirstName").value;
+    const lastName = document.getElementById("addLastName").value;
+
+    fetch("http://localhost:9090/sunbase/portal/api/assignment", {
+        method: "POST",
+        headers: {
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            first_name: firstName,
+            last_name: lastName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the response data
+        console.log(data);
+
+        // If adding customer is successful, refresh the customer list
+        if (data.statusCode === 201) {
+            getCustomers();
+        }
+    })
+    .catch(error => {
+        // Handle errors
+        console.error(error);
+    });
+});
+
+
+    updateCustomerForm.addEventListener("submit", event => {
+    event.preventDefault();
+
+    const token = getToken();
+    const uuid = document.getElementById("updateUuid").value;
+    const updatedFirstName = document.getElementById("updateFirstName").value;
+    const updatedLastName = document.getElementById("updateLastName").value;
+
+    fetch(`http://localhost:9090/sunbase/portal/api/assignment/${uuid}`, {
+        method: "PUT",
+        headers: {
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            first_name: updatedFirstName,
+            last_name: updatedLastName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the response data
+        console.log(data);
+
+        // If updating customer is successful, refresh the customer list
+        if (data.statusCode === 200) {
+            getCustomers();
+        }
+    })
+    .catch(error => {
+        // Handle errors
+        console.error(error);
+    });
+});
+
+
+    deleteCustomerForm.addEventListener("submit", event => {
+    event.preventDefault();
+
+    const token = getToken();
+    const uuidToDelete = document.getElementById("deleteUuid").value;
+
+    fetch(`http://localhost:9090/sunbase/portal/api/assignment/${uuidToDelete}`, {
+        method: "DELETE",
+        headers: {
+            Authorization: "Bearer " + token
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the response data
+        console.log(data);
+
+        // If deleting customer is successful, refresh the customer list
+        if (data.statusCode === 200) {
+            getCustomers();
+        }
+    })
+    .catch(error => {
+        // Handle errors
+        console.error(error);
+    });
+});
+              getCustomers();
+          });
+</script>
+</body>
+</html>

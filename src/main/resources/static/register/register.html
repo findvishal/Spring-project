@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register User</title>
+</head>
+<body>
+<h1>Register User</h1>
+<form id="registrationForm">
+    <label for="loginId">Login ID:</label>
+    <input type="text" id="loginId" name="loginId" required><br><br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required><br><br>
+    <button type="submit" id="registerButton" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; cursor: pointer;">Register</button>
+</form>
+
+<script>
+    const registrationForm = document.getElementById("registrationForm");
+    const registerButton = document.getElementById("registerButton");
+    registerButton.addEventListener("click", function(event) {
+        event.preventDefault(); // Prevent form submission
+
+        const formData = new FormData(registrationForm);
+
+        const formDataObject = {};
+        formData.forEach((value, key) => {
+            formDataObject[key] = value;
+        });
+
+        fetch("http://localhost:9090/sunbase/portal/api/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json" // Set the content type
+            },
+            body: JSON.stringify(formDataObject) // Convert form data to JSON
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle the response data
+            console.log(data);
+            // If registration is successful, redirect to the login page
+            if (data.statusCode === 201) {
+                console.log("Redirecting to login page...");
+                window.location.href = "/assignment/Customer/static/login/login.html";
+            }
+        })
+        .catch(error => {
+            // Handle errors
+            console.error(error);
+        });
+    });
+</script>
+</body>
+</html>
